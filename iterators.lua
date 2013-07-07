@@ -33,8 +33,9 @@ function attr(t)
 
 	for k, v in attributes(meta.__index) do
 		if not found[k] then
+			t[k] = type(v) == "function" and v(t) or v
 			found[k] = true
-			coroutine.yield(k, v)
+			coroutine.yield(k, t[k])
 		end
 	end
 end
