@@ -20,10 +20,8 @@ function attributes(t)
 end
 
 function attr(t)
-	local found = {}
 	for k, v in pairs(t) do
 		if type(k) ~= "number" then
-			found[k] = true
 			coroutine.yield(k, v)
 		end
 	end
@@ -32,10 +30,8 @@ function attr(t)
 	if meta == nil then return nil end
 
 	for k, v in attributes(meta.__index) do
-		if not found[k] then
-			t[k] = type(v) == "function" and v(t) or v
-			found[k] = true
-			coroutine.yield(k, t[k])
+		if rawget(t, k) == nil then
+			coroutine.yield(k, v)
 		end
 	end
 end
