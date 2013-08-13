@@ -1,15 +1,15 @@
 element = {}
 
-element.new = function(name)
-	element.register(name, "element")
+element.new = function(tag)
+	element.register(tag, "element")
 end
 
-element.newempty = function(name)
-	element.register(name, "empty-element")
+element.newempty = function(tag)
+	element.register(tag, "empty-element")
 end
 
-element.register = function(name, kind)
-	_G[name] = elem { __name = name, __type = kind}
+element.register = function(tag, kind)
+	_G[tag] = elem { __tag = tag, __type = kind}
 end
 
 function elem(oldtable)
@@ -43,7 +43,10 @@ function build(t)
 	end
 
 	for k, v in attributes(t) do
-		if type(v) ~= "function" then
+		if k == "__tag" or k == "__type" then
+			table[string.sub(k, 3, -1)] = v
+
+		elseif type(v) ~= "function" then
 			table.attributes[k] = v
 
 		else
