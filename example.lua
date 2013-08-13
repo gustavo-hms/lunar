@@ -1,16 +1,19 @@
-html = element {}
-div = element {}
+element.new "div"
+element.newempty "br"
 
 component = div {
 	id = property.name,
 	class = "um dois";
 
 	property.title,
+
 	div {
 		class = "três";
 
 		"Olá!"
-	}
+	},
+
+	br
 }
 
 comp = component {

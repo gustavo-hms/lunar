@@ -1,10 +1,24 @@
-function element(oldtable)
+element = {}
+
+element.new = function(name)
+	element.register(name, "element")
+end
+
+element.newempty = function(name)
+	element.register(name, "empty-element")
+end
+
+element.register = function(name, kind)
+	_G[name] = elem { __name = name, __type = kind}
+end
+
+function elem(oldtable)
 	return function(newtable)
 		if newtable == "type" then return "element" end
 		if newtable == "table" then return build(oldtable) end
 
 		setmetatable(newtable, {__index = oldtable})
-		return element(newtable)
+		return elem(newtable)
 	end
 end
 
