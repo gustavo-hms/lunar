@@ -1,39 +1,48 @@
-element = {}
+register = {}
 
-element.new = function(tag)
-	element.register(tag, "element")
+function setElementConstructor(constructor)
+	register.newElement = makeBuilder(constructor, elementBuilder)
 end
 
-element.newempty = function(tag)
-	element.register(tag, "empty-element")
+function setEmptyElementConstructor(constructor)
+	register.newEmptyElement = makeBuilder(constructor, emptyElementBuilder)
 end
 
-element.register = function(tag, kind)
-	_G[tag] = elem { __tag = tag, __type = kind}
+local function makeBuilder(constructor, builder)
+	return function(tag)
+		local element = constructor(tag)
+		local base = {}
+		base.build = builder
+		_G[tag] = elem(base, element)
+	end
 end
 
-function elem(oldtable)
+local function elem(oldtable, element)
 	return function(newtable)
 		if newtable == "type" then return "element" end
-		if newtable == "table" then return build(oldtable) end
+
+		if newtable == "element" then
+			element = oldtable:build(element)
+			return element
+		end
 
 		setmetatable(newtable, {__index = oldtable})
 		return elem(newtable)
 	end
 end
 
-function build(t)
+local function elementBuilder(self, element)
 	local properties = {}
 	local table = {}
 	table.elements = {}
 	table.attributes = {}
-	
-	for e in elements(t) do
+
+	for e in elements(self) do
 		if type(e) ~= "function" then
 			table.elements[#table.elements+1] = e
 
 		elseif e "type" == "property" then
-			value, name = e(t)
+			value, name = e(self)
 			properties[#properties + 1] = name
 			table.elements[#table.elements+1] = value
 
@@ -42,15 +51,12 @@ function build(t)
 		end
 	end
 
-	for k, v in attributes(t) do
-		if k == "__tag" or k == "__type" then
-			table[string.sub(k, 3, -1)] = v
-
-		elseif type(v) ~= "function" then
+	for k, v in attributes(self) do
+		if type(v) ~= "function" then
 			table.attributes[k] = v
 
 		else
-			value, name = v(t)
+			value, name = v(self)
 			properties[#properties + 1] = name
 			table.attributes[k] = value
 		end
@@ -60,5 +66,33 @@ function build(t)
 		table.attributes[prop] = nil
 	end
 
-	return table
+	element.attributes = table.attributes
+	element.elements = table.elements
+
+	return element
+end
+
+local function emptyElementBuilder(self, element)
+	local properties = {}
+	local table = {}
+	table.attributes = {}
+
+	for k, v in attributes(self) do
+		if type(v) ~= "function" then
+			table.attributes[k] = v
+
+		else
+			value, name = v(self)
+			properties[#properties + 1] = name
+			table.attributes[k] = value
+		end
+	end
+
+	for _, prop in ipairs(properties) do
+		table.attributes[prop] = nil
+	end
+
+	element.attributes = table.attributes
+
+	return element
 end
