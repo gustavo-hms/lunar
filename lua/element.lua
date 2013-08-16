@@ -1,3 +1,12 @@
+property = {}
+property.__index = function(t, prop)
+	return function(self)
+		if self == "type" then return "property" end
+		return self[prop], prop
+	end
+end
+setmetatable(property, property)
+
 register = {}
 
 function setElementConstructor(constructor)
@@ -8,7 +17,7 @@ function setEmptyElementConstructor(constructor)
 	register.newEmptyElement = makeBuilder(constructor, emptyElementBuilder)
 end
 
-local function makeBuilder(constructor, builder)
+function makeBuilder(constructor, builder)
 	return function(tag)
 		local element = constructor(tag)
 		local base = {}
@@ -17,7 +26,7 @@ local function makeBuilder(constructor, builder)
 	end
 end
 
-local function elem(oldtable, element)
+function elem(oldtable, element)
 	return function(newtable)
 		if newtable == "type" then return "element" end
 
@@ -31,7 +40,7 @@ local function elem(oldtable, element)
 	end
 end
 
-local function elementBuilder(self, element)
+function elementBuilder(self, element)
 	local properties = {}
 	local table = {}
 	table.elements = {}
@@ -55,7 +64,7 @@ local function elementBuilder(self, element)
 		if type(v) ~= "function" then
 			table.attributes[k] = v
 
-		else
+		elseif v "type" == "property" then
 			value, name = v(self)
 			properties[#properties + 1] = name
 			table.attributes[k] = value
@@ -72,7 +81,7 @@ local function elementBuilder(self, element)
 	return element
 end
 
-local function emptyElementBuilder(self, element)
+function emptyElementBuilder(self, element)
 	local properties = {}
 	local table = {}
 	table.attributes = {}

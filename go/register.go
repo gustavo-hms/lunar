@@ -13,4 +13,10 @@ func init() {
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	setEmpty := luar.NewLuaObjectFromName(L, "setEmptyElementConstructor")
+	_, err = setEmpty.Call(newEmptyElement)
+	if err != nil {
+		fmt.Println(err)
+	}
 }
